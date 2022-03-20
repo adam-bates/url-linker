@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use rocket::{
+    http::Status,
     routes,
     serde::{json::Json, Deserialize},
     Build, Rocket,
@@ -11,6 +12,7 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
         "/api",
         routes![
             health,
+            index,
             create,
             get_all,
             get_by_key,
@@ -25,16 +27,22 @@ fn health() -> &'static str {
     return "Service is healthy.";
 }
 
-#[derive(Deserialize)]
+#[get("/")]
+fn index() -> Status {
+    return Status::NotFound;
+}
+
+#[derive(Debug, Deserialize)]
 struct Url {
-    bucket: String,
     key: String,
-    destination: String,
+    url: String,
 }
 
 #[post("/urls", data = "<url>")]
 fn create(url: Json<Url>) -> String {
-    return format!("create");
+    let url = url.0;
+
+    return format!("create\nBody: {url:?}");
 }
 
 #[get("/urls")]
@@ -42,17 +50,24 @@ fn get_all() -> String {
     return format!("get_all");
 }
 
-#[get("/urls/<input..>")]
-fn get_by_key(input: PathBuf) -> String {
-    return format!("get_by_key: {:?}", input);
+#[get("/urls/<key..>")]
+fn get_by_key(key: PathBuf) -> String {
+    let key = key.display().to_string();
+
+    return format!("get_by_key: {key}");
 }
 
-#[put("/urls/<input..>", data = "<url>")]
-fn update_by_key(input: PathBuf, url: Json<Url>) -> String {
-    return format!("update_by_key: {:?}", input);
+#[put("/urls/<key..>", data = "<url>")]
+fn update_by_key(key: PathBuf, url: Json<Url>) -> String {
+    let key = key.display().to_string();
+    let url = url.0;
+
+    return format!("update_by_key: {key}\nBody: {url:?}");
 }
 
-#[delete("/urls/<input..>", data = "<url>")]
-fn delete_by_key(input: PathBuf, url: Json<Url>) -> String {
-    return format!("delete_by_key: {:?}", input);
+#[delete("/urls/<key..>")]
+fn delete_by_key(key: PathBuf) -> String {
+    let key = key.display().to_string();
+
+    return format!("delete_by_key: {key}");
 }
