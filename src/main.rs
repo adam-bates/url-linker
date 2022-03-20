@@ -1,30 +1,26 @@
-extern crate dotenv;
-
-use dotenv::dotenv;
-
 #[macro_use]
 extern crate rocket;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
+mod config;
+mod controllers;
 
-fn init_env() {
-    match dotenv() {
-        Ok(_) => {}
-        Err(dotenv::Error::Io(io_err)) if io_err.kind() == std::io::ErrorKind::NotFound => {}
-        err => panic!("Error! {:?}", err),
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
+    config::init_env();
+
+    let rocket = rocket::build();
+    let rocket = controllers::mount(rocket);
+
+    return match rocket.launch().await {
+        Err(err) => match err.kind() {
+            rocket::error::ErrorKind::Collisions(collisions) => {
+                for r in &collisions.routes {
+                    println!("\nRoute1: {:?}\n\nRoute2: {:?}\n", r.0, r.1);
+                }
+                return Ok(());
+            }
+            _ => Err(err),
+        },
+        x => x,
     };
-}
-
-#[launch]
-fn rocket() -> _ {
-    init_env();
-
-    for (key, value) in std::env::vars() {
-        println!("{}: {}", key, value);
-    }
-
-    rocket::build().mount("/", routes![index])
 }
