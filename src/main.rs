@@ -1,17 +1,21 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket_sync_db_pools::{database, postgres};
+#[macro_use]
+extern crate lazy_static;
 
 mod config;
 mod controllers;
+mod errors;
+mod services;
+mod types;
+mod utils;
 
-#[database("url_linker")]
-struct DbConnection(postgres::Client);
+use config::{database::DbConnection, environment};
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
-    config::init_env();
+    environment::init_env();
 
     let rocket = rocket::build();
     let rocket = rocket.attach(DbConnection::fairing());

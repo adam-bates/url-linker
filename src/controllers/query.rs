@@ -7,7 +7,7 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
 }
 
 #[get("/<key..>")]
-fn query(key: PathBuf) -> String {
+async fn query(key: PathBuf) -> String {
     let key = key.display().to_string();
 
     return format!("key: {key}");

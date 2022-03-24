@@ -1,11 +1,13 @@
 use std::path::PathBuf;
 
-use rocket::{
-    http::Status,
-    routes,
-    serde::{json::Json, Deserialize},
-    Build, Rocket,
-};
+use rocket::{http::Status, routes, serde::json::Json, Build, Rocket};
+
+use crate::config::database::DbConnection;
+use crate::errors::UrlError;
+use crate::services::UrlService;
+use crate::types::Url;
+
+use super::guards::ApiUser;
 
 pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
     return rocket.mount(
@@ -23,42 +25,51 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
 }
 
 #[get("/health")]
-fn health() -> &'static str {
+async fn health() -> &'static str {
     return "Service is healthy.";
 }
 
 #[get("/")]
-fn index() -> Status {
+async fn index() -> Status {
     return Status::NotFound;
 }
 
-#[derive(Debug, Deserialize)]
-struct Url {
-    key: String,
-    url: String,
-}
-
 #[post("/urls", data = "<url>")]
-fn create(url: Json<Url>) -> String {
-    let url = url.0;
+async fn create(service: UrlService, url: Json<Url>, _api_user: ApiUser) -> Result<(), UrlError> {
+    // TODO: Validate
 
-    return format!("create\nBody: {url:?}");
+    service.create(url.into()).await?;
+
+    return Ok(());
 }
 
 #[get("/urls")]
-fn get_all() -> String {
+async fn get_all(_api_user: ApiUser) -> String {
     return format!("get_all");
 }
 
 #[get("/urls/<key..>")]
-fn get_by_key(key: PathBuf) -> String {
+async fn get_by_key(db: DbConnection, key: PathBuf, _api_user: ApiUser) -> String {
     let key = key.display().to_string();
 
-    return format!("get_by_key: {key}");
+    return db
+        .run(move |connection| {
+            for row in connection
+                .query("SELECT key, url FROM key_urls WHERE key = $1;", &[&key])
+                .unwrap()
+            {
+                let url: &str = row.get("url");
+
+                return String::from(url);
+            }
+
+            panic!("Not found!");
+        })
+        .await;
 }
 
 #[put("/urls/<key..>", data = "<url>")]
-fn update_by_key(key: PathBuf, url: Json<Url>) -> String {
+async fn update_by_key(key: PathBuf, url: Json<Url>, _api_user: ApiUser) -> String {
     let key = key.display().to_string();
     let url = url.0;
 
@@ -66,7 +77,7 @@ fn update_by_key(key: PathBuf, url: Json<Url>) -> String {
 }
 
 #[delete("/urls/<key..>")]
-fn delete_by_key(key: PathBuf) -> String {
+async fn delete_by_key(key: PathBuf, _api_user: ApiUser) -> String {
     let key = key.display().to_string();
 
     return format!("delete_by_key: {key}");
