@@ -7,12 +7,12 @@ use lazy_static;
 
 use crate::utils;
 
-lazy_static! {
-    static ref HEADER_ADMIN_API_TOKEN: String = utils::requiredEnvVar("HEADER_ADMIN_API_TOKEN");
-    static ref ADMIN_API_TOKEN: String = utils::requiredEnvVar("ADMIN_API_TOKEN");
-}
+use super::super::types::request::admin_api_token::AdminApiToken;
 
-pub struct AdminApiToken;
+lazy_static! {
+    static ref HEADER_ADMIN_API_TOKEN: String = utils::required_env_var("HEADER_ADMIN_API_TOKEN");
+    static ref ADMIN_API_TOKEN: String = utils::required_env_var("ADMIN_API_TOKEN");
+}
 
 #[derive(Debug)]
 pub enum AdminApiTokenError {

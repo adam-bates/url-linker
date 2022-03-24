@@ -8,7 +8,6 @@ mod config;
 mod controllers;
 mod errors;
 mod services;
-mod types;
 mod utils;
 
 use config::{database::DbConnection, environment};
