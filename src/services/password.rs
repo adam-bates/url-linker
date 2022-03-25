@@ -26,11 +26,11 @@ impl PasswordService for Argon2PasswordService {
         let salt = Uuid::new_v4();
 
         return argon2::hash_encoded(client_secret.as_bytes(), salt.as_bytes(), &self.config)
-            .map_err(|e| UserError::HashError(e));
+            .map_err(|e| UserError::HashError(e.to_string()));
     }
 
     fn verify_client_secret(&self, hash: &str, client_secret: &str) -> Result<bool, UserError> {
         return argon2::verify_encoded_ext(hash, client_secret.as_bytes(), self.config.secret, &[])
-            .map_err(|e| UserError::HashError(e));
+            .map_err(|e| UserError::HashError(e.to_string()));
     }
 }

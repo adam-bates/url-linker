@@ -48,9 +48,46 @@ impl DbUserService {
     }
 }
 
+fn validate_client_id(client_id: &str) -> Result<(), UserError> {
+    const MIN: usize = 3;
+    const MAX: usize = 256;
+
+    let length = client_id.len();
+
+    if length < MIN {
+        return Err(UserError::ClientIdTooShort { min: MIN });
+    }
+
+    if length > MAX {
+        return Err(UserError::ClientIdTooLong { max: MAX });
+    }
+
+    return Ok(());
+}
+
+fn validate_client_secret(client_secret: &str) -> Result<(), UserError> {
+    const MIN: usize = 6;
+    const MAX: usize = 1024;
+
+    let length = client_secret.len();
+
+    if length < MIN {
+        return Err(UserError::ClientSecretTooShort { min: MIN });
+    }
+
+    if length > MAX {
+        return Err(UserError::ClientSecretTooLong { max: MAX });
+    }
+
+    return Ok(());
+}
+
 #[rocket::async_trait]
 impl UserService for DbUserService {
     async fn create(&self, user: CreateUserRequest) -> Result<User, UserError> {
+        validate_client_id(&user.client_id)?;
+        validate_client_secret(&user.client_secret)?;
+
         let hash = self.password_service.generate_hash(&user.client_secret)?;
 
         let is_admin = user.is_admin.unwrap_or(false);
@@ -219,6 +256,14 @@ impl UserService for DbUserService {
     }
 
     async fn update_by_id(&self, id: i32, user: UpdateUserRequest) -> Result<User, UserError> {
+        if let Some(client_id) = &user.client_id {
+            validate_client_id(client_id)?;
+        }
+
+        if let Some(client_secret) = &user.client_secret {
+            validate_client_secret(client_secret)?;
+        }
+
         let hash = match user.client_secret {
             Some(client_secret) => Some(self.password_service.generate_hash(&client_secret)?),
             None => None,
@@ -326,6 +371,8 @@ impl UserService for DbUserService {
         user: User,
         client_secret: String,
     ) -> Result<User, UserError> {
+        validate_client_secret(&client_secret)?;
+
         let hash = self.password_service.generate_hash(&client_secret)?;
 
         let (id, client_id, is_admin) = self
