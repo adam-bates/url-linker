@@ -3,12 +3,7 @@ use rocket::{
     request::{FromRequest, Outcome, Request},
 };
 
-use lazy_static;
-
-use crate::services::{
-    types::user::{User, UserRequest},
-    user::UserService,
-};
+use crate::services::{types::user::User, user::UserService};
 use crate::utils;
 
 lazy_static! {
@@ -17,7 +12,7 @@ lazy_static! {
 }
 
 #[derive(Debug)]
-pub enum ApiUserCredentialsError {
+pub enum UserCredentialsError {
     Missing,
     Invalid,
     NoUserService,
@@ -26,22 +21,21 @@ pub enum ApiUserCredentialsError {
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for User {
-    type Error = ApiUserCredentialsError;
+    type Error = UserCredentialsError;
 
     async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let headers = req.headers();
 
         // Get client credentials from request headers
-        let user = match (
+        let (client_id, client_secret) = match (
             headers.get_one(HEADER_CLIENT_ID.as_str()),
             headers.get_one(HEADER_CLIENT_SECRET.as_str()),
         ) {
-            (Some(client_id), Some(client_secret)) => UserRequest {
-                client_id: String::from(client_id),
-                client_secret: String::from(client_secret),
-            },
+            (Some(client_id), Some(client_secret)) => {
+                (String::from(client_id), String::from(client_secret))
+            }
             _ => {
-                return Outcome::Failure((Status::Unauthorized, ApiUserCredentialsError::Missing));
+                return Outcome::Failure((Status::Unauthorized, UserCredentialsError::Missing));
             }
         };
 
@@ -52,22 +46,22 @@ impl<'r> FromRequest<'r> for User {
             _ => {
                 return Outcome::Failure((
                     Status::InternalServerError,
-                    ApiUserCredentialsError::Unknown,
+                    UserCredentialsError::Unknown,
                 ))
             }
         };
 
         // Get verified user
-        return match user_service.verify_and_get(user).await {
+        return match user_service.verify_and_get(client_id, client_secret).await {
             Ok(user) => Outcome::Success(user),
-            _ => Outcome::Failure((Status::Forbidden, ApiUserCredentialsError::Invalid)),
+            _ => Outcome::Failure((Status::Unauthorized, UserCredentialsError::Invalid)),
         };
     }
 }
 
 async fn get_user_service(
     req: &Request<'_>,
-) -> Outcome<Box<dyn UserService>, ApiUserCredentialsError> {
+) -> Outcome<Box<dyn UserService>, UserCredentialsError> {
     let user_service_outcome = req.guard::<Box<dyn UserService>>().await;
 
     if let Outcome::Success(user_service) = user_service_outcome {
@@ -75,7 +69,7 @@ async fn get_user_service(
     } else {
         return Outcome::Failure((
             Status::InternalServerError,
-            ApiUserCredentialsError::NoUserService,
+            UserCredentialsError::NoUserService,
         ));
     }
 }

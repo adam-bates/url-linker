@@ -4,6 +4,8 @@ extern crate rocket;
 #[macro_use]
 extern crate lazy_static;
 
+extern crate argon2;
+
 mod config;
 mod controllers;
 mod errors;

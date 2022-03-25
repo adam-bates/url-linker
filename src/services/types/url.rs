@@ -1,6 +1,13 @@
-pub struct UrlRequest {
+#[derive(Debug)]
+pub struct CreateUrlRequest {
     pub key: String,
     pub url: String,
+}
+
+#[derive(Debug)]
+pub struct UpdateUrlRequest {
+    pub key: Option<String>,
+    pub url: Option<String>,
 }
 
 pub struct Url {

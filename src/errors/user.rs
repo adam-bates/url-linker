@@ -1,14 +1,27 @@
-use rocket::{http::Status, response, response::Responder, Request};
+use rocket::{
+    http::Status,
+    response::{Responder, Result},
+    Request,
+};
 
+use argon2::Error as Argon2Error;
+
+#[derive(Debug)]
 pub enum UserError {
     ClientIdAlreadyExists,
+    Invalid,
+    NotFound,
+    HashError(Argon2Error),
+    Unknown,
 }
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for UserError {
-    fn respond_to(self, _request: &'r Request<'_>) -> response::Result<'o> {
+    fn respond_to(self, _request: &'r Request<'_>) -> Result<'o> {
         return match self {
-            Self::ClientIdAlreadyExists => response::Result::Err(Status::BadRequest),
-            _ => response::Result::Err(Status::InternalServerError),
+            Self::ClientIdAlreadyExists => Err(Status::BadRequest),
+            Self::Invalid => Err(Status::Unauthorized),
+            Self::NotFound => Err(Status::NotFound),
+            _ => Err(Status::InternalServerError),
         };
     }
 }

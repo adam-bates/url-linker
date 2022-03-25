@@ -1,14 +1,21 @@
-use rocket::{http::Status, response, response::Responder, Request};
+use rocket::{
+    http::Status,
+    response::{Responder, Result},
+    Request,
+};
 
+#[derive(Debug)]
 pub enum UrlError {
     KeyAlreadyExists,
+    NotFound,
 }
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for UrlError {
-    fn respond_to(self, _request: &'r Request<'_>) -> response::Result<'o> {
+    fn respond_to(self, _request: &'r Request<'_>) -> Result<'o> {
         return match self {
-            Self::KeyAlreadyExists => response::Result::Err(Status::BadRequest),
-            _ => response::Result::Err(Status::InternalServerError),
+            Self::KeyAlreadyExists => Err(Status::BadRequest),
+            Self::NotFound => Err(Status::NotFound),
+            // _ => Err(Status::InternalServerError),
         };
     }
 }

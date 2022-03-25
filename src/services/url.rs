@@ -2,13 +2,13 @@ use crate::config::database::DbConnection;
 use crate::errors::url::UrlError;
 
 use super::types::{
-    url::{Url, UrlRequest},
+    url::{CreateUrlRequest, UpdateUrlRequest, Url},
     user::User,
 };
 
 #[rocket::async_trait]
 pub trait UrlService: Send + Sync {
-    async fn create(&self, user: User, url: UrlRequest) -> Result<Url, UrlError>;
+    async fn create(&self, user: User, url: CreateUrlRequest) -> Result<Url, UrlError>;
 
     async fn get_all_by_user(&self, user: User) -> Result<Vec<Url>, UrlError>;
 
@@ -18,10 +18,10 @@ pub trait UrlService: Send + Sync {
         &self,
         user: User,
         key: String,
-        url: UrlRequest,
+        url: UpdateUrlRequest,
     ) -> Result<Url, UrlError>;
 
-    async fn delete_by_key_for_user(&self, user: User, key: String) -> Result<Url, UrlError>;
+    async fn delete_by_key_for_user(&self, user: User, key: String) -> Result<(), UrlError>;
 }
 
 pub struct DbUrlService {
@@ -36,7 +36,7 @@ impl DbUrlService {
 
 #[rocket::async_trait]
 impl UrlService for DbUrlService {
-    async fn create(&self, user: User, url: UrlRequest) -> Result<Url, UrlError> {
+    async fn create(&self, user: User, url: CreateUrlRequest) -> Result<Url, UrlError> {
         let result = self
             .db
             .run(move |connection| {
@@ -71,19 +71,19 @@ impl UrlService for DbUrlService {
         // })
         // .await;
 
-        todo!()
+        todo!("{:?}", user)
     }
 
     async fn update_by_key_for_user(
         &self,
         user: User,
         key: String,
-        url: UrlRequest,
+        url: UpdateUrlRequest,
     ) -> Result<Url, UrlError> {
         todo!()
     }
 
-    async fn delete_by_key_for_user(&self, user: User, key: String) -> Result<Url, UrlError> {
+    async fn delete_by_key_for_user(&self, user: User, key: String) -> Result<(), UrlError> {
         todo!()
     }
 }
