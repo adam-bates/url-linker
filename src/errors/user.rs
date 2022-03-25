@@ -7,6 +7,8 @@ use rocket::{
 
 use serde::Serialize;
 
+use super::url::UrlError;
+
 #[derive(Debug, Serialize)]
 pub enum UserError {
     ClientIdAlreadyExists,
@@ -14,6 +16,7 @@ pub enum UserError {
     ClientIdTooLong { max: usize },
     ClientSecretTooShort { min: usize },
     ClientSecretTooLong { max: usize },
+    UrlDeletionError(UrlError),
     Invalid,
     NotFound,
     HashError(String),

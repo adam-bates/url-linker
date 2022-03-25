@@ -4,6 +4,7 @@ use crate::errors::user::UserError;
 use super::{
     password::PasswordService,
     types::user::{CreateUserRequest, UpdateUserRequest, User},
+    url::UrlService,
 };
 
 #[rocket::async_trait]
@@ -33,16 +34,19 @@ pub trait UserService: Send + Sync {
 
 pub struct DbUserService {
     db: DbConnection,
+    url_service: Box<dyn UrlService>,
     password_service: Box<dyn PasswordService>,
 }
 
 impl DbUserService {
     pub fn new(
         db: DbConnection,
+        url_service: Box<dyn UrlService>,
         password_service: Box<dyn PasswordService>,
     ) -> Box<dyn UserService> {
         return Box::new(Self {
             db,
+            url_service,
             password_service,
         });
     }
@@ -90,6 +94,7 @@ impl UserService for DbUserService {
 
         let hash = self.password_service.generate_hash(&user.client_secret)?;
 
+        let client_id = user.client_id.to_ascii_lowercase();
         let is_admin = user.is_admin.unwrap_or(false);
 
         let (id, client_id, is_admin) = self
@@ -98,7 +103,7 @@ impl UserService for DbUserService {
                 for _ in connection
                     .query(
                         "SELECT client_id FROM users WHERE client_id = $1;",
-                        &[&user.client_id],
+                        &[&client_id],
                     )
                     .unwrap()
                 {
@@ -108,7 +113,7 @@ impl UserService for DbUserService {
                 let rows = connection
                     .execute(
                         "INSERT INTO users (client_id, client_secret, is_admin) VALUES ($1, $2, $3);",
-                        &[&user.client_id, &hash, &is_admin],
+                        &[&client_id, &hash, &is_admin],
                     )
                     .unwrap();
 
@@ -119,7 +124,7 @@ impl UserService for DbUserService {
                 for row in connection
                     .query(
                         "SELECT id, client_id, is_admin FROM users WHERE client_id = $1;",
-                        &[&user.client_id],
+                        &[&client_id],
                     )
                     .unwrap()
                 {
@@ -181,6 +186,8 @@ impl UserService for DbUserService {
         client_id: String,
         client_secret: String,
     ) -> Result<User, UserError> {
+        let client_id = client_id.to_ascii_lowercase();
+
         let (id, client_id, hash, is_admin) = self
             .db
             .run(move |connection| {
@@ -286,6 +293,8 @@ impl UserService for DbUserService {
                 }
 
                 if let Some(client_id) = user.client_id {
+                    let client_id = client_id.to_ascii_lowercase();
+
                     for row in connection
                         .query(
                             "SELECT id, client_id FROM users WHERE client_id = $1;",
@@ -418,6 +427,11 @@ impl UserService for DbUserService {
     }
 
     async fn delete_by_id(&self, id: i32) -> Result<(), UserError> {
+        self.url_service
+            .delete_by_user_id(id)
+            .await
+            .map_err(|e| UserError::UrlDeletionError(e))?;
+
         self.db
             .run(move |connection| {
                 let mut found = false;

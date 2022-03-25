@@ -6,7 +6,7 @@ use crate::services::types::url::Url as ServiceUrl;
 pub struct Url {
     pub key: String,
     pub url: String,
-    pub user_id: isize,
+    pub user_id: i32,
 }
 
 #[derive(Debug, Serialize)]

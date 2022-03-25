@@ -10,6 +10,7 @@ serde = "1.0"
 rust-argon2 = "1.0"
 uuid = { version = "0.8", features = ["v4"] }
 lazy_static = "1.4"
+url = { version = "2.2", features = ["serde"] }
 
 [dependencies.rocket_sync_db_pools]
 version = "0.1.0-rc.1"

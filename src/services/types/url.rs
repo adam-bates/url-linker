@@ -13,5 +13,5 @@ pub struct UpdateUrlRequest {
 pub struct Url {
     pub key: String,
     pub url: String,
-    pub user_id: isize,
+    pub user_id: i32,
 }
