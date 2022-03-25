@@ -1,17 +1,27 @@
 use rocket::{routes, serde::json::Json, Build, Rocket};
 
 use crate::errors::user::UserError;
-use crate::services::{types::admin::Admin, user::UserService};
+use crate::services::{
+    types::{admin::Admin, user::User as AuthUser},
+    user::UserService,
+};
 
 use super::super::types::{
-    request::user::{CreateUser, UpdateUser},
+    request::user::{CreateUser, UpdateUser, UpdateUserClientSecret},
     response::user::{User, Users},
 };
 
 pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
     return rocket.mount(
         "/api/users",
-        routes![create, get_all, get_by_id, update_by_id, delete_by_id],
+        routes![
+            create,
+            get_all,
+            get_by_id,
+            update_by_id,
+            update_client_secret_by_id,
+            delete_by_id
+        ],
     );
 }
 
@@ -58,6 +68,21 @@ async fn update_by_id(
     let user: UpdateUser = user.0;
 
     let user = user_service.update_by_id(id, user.into()).await?;
+
+    return Ok(User::from(user));
+}
+
+#[put("/client_secret", data = "<user_client_secret>")]
+async fn update_client_secret_by_id(
+    user_service: Box<dyn UserService>,
+    user_client_secret: Json<UpdateUserClientSecret>,
+    user: AuthUser,
+) -> Result<User, UserError> {
+    let body: UpdateUserClientSecret = user_client_secret.0;
+
+    let user = user_service
+        .update_self_client_secret(user, body.client_secret)
+        .await?;
 
     return Ok(User::from(user));
 }

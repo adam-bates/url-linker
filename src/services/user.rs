@@ -22,6 +22,12 @@ pub trait UserService: Send + Sync {
 
     async fn update_by_id(&self, id: i32, user: UpdateUserRequest) -> Result<User, UserError>;
 
+    async fn update_self_client_secret(
+        &self,
+        user: User,
+        client_secret: String,
+    ) -> Result<User, UserError>;
+
     async fn delete_by_id(&self, id: i32) -> Result<(), UserError>;
 }
 
@@ -291,6 +297,55 @@ impl UserService for DbUserService {
                     .query(
                         "SELECT id, client_id, is_admin FROM users WHERE id = $1;",
                         &[&id],
+                    )
+                    .unwrap()
+                {
+                    let id: i32 = row.get("id");
+
+                    let value: &str = row.get("client_id");
+                    let client_id = String::from(value);
+
+                    let is_admin: bool = row.get("is_admin");
+
+                    return Ok((id, client_id, is_admin));
+                }
+
+                return Err(UserError::Unknown);
+            })
+            .await?;
+
+        return Ok(User {
+            id,
+            client_id,
+            is_admin,
+        });
+    }
+
+    async fn update_self_client_secret(
+        &self,
+        user: User,
+        client_secret: String,
+    ) -> Result<User, UserError> {
+        let hash = self.password_service.generate_hash(&client_secret)?;
+
+        let (id, client_id, is_admin) = self
+            .db
+            .run(move |connection| {
+                let rows = connection
+                    .execute(
+                        "UPDATE users SET client_secret = $1 WHERE id = $2;",
+                        &[&hash, &user.id],
+                    )
+                    .unwrap();
+
+                if rows != 1 {
+                    return Err(UserError::Unknown);
+                }
+
+                for row in connection
+                    .query(
+                        "SELECT id, client_id, is_admin FROM users WHERE id = $1;",
+                        &[&user.id],
                     )
                     .unwrap()
                 {

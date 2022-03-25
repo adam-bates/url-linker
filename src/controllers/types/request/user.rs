@@ -47,3 +47,14 @@ impl Into<UpdateUserRequest> for UpdateUser {
         };
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserClientSecret {
+    pub client_secret: String,
+}
+
+impl From<Json<UpdateUserClientSecret>> for UpdateUserClientSecret {
+    fn from(json: Json<UpdateUserClientSecret>) -> Self {
+        return json.0;
+    }
+}
