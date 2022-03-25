@@ -61,16 +61,27 @@ fn validate_key(key: &str) -> Result<(), UrlError> {
     return Ok(());
 }
 
-fn validate_url(url: &str) -> Result<(), UrlError> {
-    let url = url::Url::parse(url).map_err(|e| UrlError::UrlParseError(e.to_string()))?;
+fn validate_url(raw_url: &str) -> Result<(), UrlError> {
+    let url = url::Url::parse(raw_url).map_err(|e| UrlError::UrlParseError(e.to_string()))?;
 
     if url.domain().is_none() {
         return Err(UrlError::UrlInvalid);
     }
 
     let scheme = url.scheme();
-
     if scheme != "http" && scheme != "https" {
+        return Err(UrlError::UrlInvalid);
+    }
+
+    if !raw_url.contains("://") {
+        return Err(UrlError::UrlInvalid);
+    }
+
+    if url.port_or_known_default().is_none() {
+        return Err(UrlError::UrlInvalid);
+    }
+
+    if url.cannot_be_a_base() {
         return Err(UrlError::UrlInvalid);
     }
 

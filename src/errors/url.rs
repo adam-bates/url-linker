@@ -15,6 +15,7 @@ pub enum UrlError {
     UrlInvalid,
     NotFound,
     Unknown,
+    UnexpectedUrlParseError,
 }
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for UrlError {
