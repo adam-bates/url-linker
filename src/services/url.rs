@@ -48,6 +48,12 @@ fn validate_key(key: &str) -> Result<(), UrlError> {
     const MIN: usize = 1;
     const MAX: usize = 128;
 
+    if key.starts_with("api/") {
+        return Err(UrlError::KeyReserved {
+            prefix: String::from("/api"),
+        });
+    }
+
     let length = key.len();
 
     if length < MIN {

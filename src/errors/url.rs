@@ -9,6 +9,7 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub enum UrlError {
     KeyAlreadyExists,
+    KeyReserved { prefix: String },
     KeyTooShort { min: usize },
     KeyTooLong { max: usize },
     UrlParseError(String),
