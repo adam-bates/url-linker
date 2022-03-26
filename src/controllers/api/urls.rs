@@ -16,9 +16,8 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
         "/api/v1/urls",
         routes![
             create,
-            get_all,
-            get_all_by_user_id,
             get_all_for_admin,
+            get_all_by_user_id,
             get_by_key,
             update_by_key,
             delete_by_key
@@ -39,7 +38,7 @@ async fn create(
     return Ok(Url::from(url));
 }
 
-#[get("/?include_all", rank = 1)]
+#[get("/?include_all")]
 async fn get_all_for_admin(
     _admin: Admin,
     url_service: Box<dyn UrlService>,
@@ -53,20 +52,16 @@ async fn get_all_for_admin(
 
 #[get("/?<user_id>", rank = 2)]
 async fn get_all_by_user_id(
-    _admin: Admin,
+    user: User,
     url_service: Box<dyn UrlService>,
-    user_id: i32,
+    user_id: Option<i32>,
 ) -> Result<Urls, UrlError> {
+    let user_id = match user_id {
+        Some(user_id) if user.is_admin => user_id,
+        _ => user.id,
+    };
+
     let urls = url_service.get_all_by_user_id(user_id).await?;
-
-    return Ok(Urls {
-        values: urls.into_iter().map(|url| Url::from(url)).collect(),
-    });
-}
-
-#[get("/", rank = 3)]
-async fn get_all(user: User, url_service: Box<dyn UrlService>) -> Result<Urls, UrlError> {
-    let urls = url_service.get_all_for_user(user).await?;
 
     return Ok(Urls {
         values: urls.into_iter().map(|url| Url::from(url)).collect(),
