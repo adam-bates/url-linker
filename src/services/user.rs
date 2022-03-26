@@ -26,7 +26,7 @@ pub trait UserService: Send + Sync {
     async fn update_self_client_secret(
         &self,
         user: User,
-        client_secret: String,
+        client_secret: Option<String>,
     ) -> Result<User, UserError>;
 
     async fn delete_by_id(&self, id: i32) -> Result<(), UserError>;
@@ -378,8 +378,15 @@ impl UserService for DbUserService {
     async fn update_self_client_secret(
         &self,
         user: User,
-        client_secret: String,
+        client_secret: Option<String>,
     ) -> Result<User, UserError> {
+        let client_secret = match client_secret {
+            None => {
+                return self.get_by_id(user.id).await;
+            }
+            Some(client_secret) => client_secret,
+        };
+
         validate_client_secret(&client_secret)?;
 
         let hash = self.password_service.generate_hash(&client_secret)?;

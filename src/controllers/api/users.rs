@@ -13,16 +13,39 @@ use super::super::types::{
 
 pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
     return rocket.mount(
-        "/api/users",
+        "/api/v1/users",
         routes![
+            get_self,
+            update_self,
             create,
             get_all,
             get_by_id,
             update_by_id,
-            update_client_secret_by_id,
             delete_by_id
         ],
     );
+}
+
+#[get("/self")]
+async fn get_self(user_service: Box<dyn UserService>, user: AuthUser) -> Result<User, UserError> {
+    let user = user_service.get_by_id(user.id).await?;
+
+    return Ok(User::from(user));
+}
+
+#[put("/self", data = "<user_client_secret>")]
+async fn update_self(
+    user_service: Box<dyn UserService>,
+    user_client_secret: Json<UpdateUserClientSecret>,
+    user: AuthUser,
+) -> Result<User, UserError> {
+    let body: UpdateUserClientSecret = user_client_secret.0;
+
+    let user = user_service
+        .update_self_client_secret(user, body.client_secret)
+        .await?;
+
+    return Ok(User::from(user));
 }
 
 #[post("/", data = "<user>")]
@@ -68,21 +91,6 @@ async fn update_by_id(
     let user: UpdateUser = user.0;
 
     let user = user_service.update_by_id(id, user.into()).await?;
-
-    return Ok(User::from(user));
-}
-
-#[put("/client_secret", data = "<user_client_secret>")]
-async fn update_client_secret_by_id(
-    user_service: Box<dyn UserService>,
-    user_client_secret: Json<UpdateUserClientSecret>,
-    user: AuthUser,
-) -> Result<User, UserError> {
-    let body: UpdateUserClientSecret = user_client_secret.0;
-
-    let user = user_service
-        .update_self_client_secret(user, body.client_secret)
-        .await?;
 
     return Ok(User::from(user));
 }

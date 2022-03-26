@@ -6,7 +6,12 @@ use crate::errors::url::UrlError;
 use crate::services::url::UrlService;
 
 pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
-    return rocket.mount("/", routes![query]);
+    return rocket.mount("/", routes![index, query]);
+}
+
+#[get("/")]
+async fn index() -> Redirect {
+    return Redirect::to(uri!("/api/v1/swagger"));
 }
 
 #[get("/<key..>", rank = 2)]

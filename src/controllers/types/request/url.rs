@@ -3,6 +3,7 @@ use rocket::serde::{json::Json, Deserialize};
 use crate::services::types::url::{CreateUrlRequest, UpdateUrlRequest};
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateUrl {
     pub key: String,
     pub url: String,
@@ -24,6 +25,7 @@ impl Into<CreateUrlRequest> for CreateUrl {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateUrl {
     pub key: Option<String>,
     pub url: Option<String>,
