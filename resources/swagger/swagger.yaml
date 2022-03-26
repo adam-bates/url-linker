@@ -23,16 +23,18 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: key
-          in: body
-          description: alias of URL
-          required: true
-          type: string
-        - name: url
-          in: body
-          description: URL to redirect to
-          required: true
-          type: string
+        - in: body
+          name: url
+          schema:
+            type: object
+            required:
+              - key
+              - url
+            properties:
+              key:
+                type: string
+              url:
+                type: string
       responses:
         "200":
           schema:
@@ -91,16 +93,15 @@ paths:
           description: URL key to operate on
           required: true
           type: string
-        - name: key
-          in: body
-          description: alias of URL
-          required: false
-          type: string
-        - name: url
-          in: body
-          description: URL to redirect to
-          required: false
-          type: string
+        - in: body
+          name: url
+          schema:
+            type: object
+            properties:
+              key:
+                type: string
+              url:
+                type: string
       responses:
         "200":
           schema:
@@ -149,11 +150,13 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: clientSecret
-          in: body
-          description: New client secret
-          required: false
-          type: string
+        - in: body
+          name: user
+          schema:
+            type: object
+            properties:
+              clientSecret:
+                type: string
       responses:
         "200":
           schema:
