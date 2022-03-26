@@ -2,7 +2,7 @@ use rocket::{routes, serde::json::Json, Build, Rocket};
 
 use crate::errors::user::UserError;
 use crate::services::{
-    types::{admin::Admin, user::User as AuthUser},
+    types::{admin::Admin, user::User as ApiUser},
     user::UserService,
 };
 
@@ -27,7 +27,7 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
 }
 
 #[get("/self")]
-async fn get_self(user_service: Box<dyn UserService>, user: AuthUser) -> Result<User, UserError> {
+async fn get_self(user: ApiUser, user_service: Box<dyn UserService>) -> Result<User, UserError> {
     let user = user_service.get_by_id(user.id).await?;
 
     return Ok(User::from(user));
@@ -35,9 +35,9 @@ async fn get_self(user_service: Box<dyn UserService>, user: AuthUser) -> Result<
 
 #[put("/self", data = "<user_client_secret>")]
 async fn update_self(
+    user: ApiUser,
     user_service: Box<dyn UserService>,
     user_client_secret: Json<UpdateUserClientSecret>,
-    user: AuthUser,
 ) -> Result<User, UserError> {
     let body: UpdateUserClientSecret = user_client_secret.0;
 
@@ -50,9 +50,9 @@ async fn update_self(
 
 #[post("/", data = "<user>")]
 async fn create(
+    _admin: Admin,
     user_service: Box<dyn UserService>,
     user: Json<CreateUser>,
-    _admin: Admin,
 ) -> Result<User, UserError> {
     let user: CreateUser = user.0;
 
@@ -61,9 +61,13 @@ async fn create(
     return Ok(User::from(user));
 }
 
-#[get("/")]
-async fn get_all(user_service: Box<dyn UserService>, _admin: Admin) -> Result<Users, UserError> {
-    let users = user_service.get_all().await?;
+#[get("/?<client_id>")]
+async fn get_all(
+    _admin: Admin,
+    user_service: Box<dyn UserService>,
+    client_id: Option<String>,
+) -> Result<Users, UserError> {
+    let users = user_service.get_all(client_id).await?;
 
     return Ok(Users {
         values: users.into_iter().map(|user| User::from(user)).collect(),
@@ -72,9 +76,9 @@ async fn get_all(user_service: Box<dyn UserService>, _admin: Admin) -> Result<Us
 
 #[get("/<id>")]
 async fn get_by_id(
+    _admin: Admin,
     user_service: Box<dyn UserService>,
     id: i32,
-    _admin: Admin,
 ) -> Result<User, UserError> {
     let user = user_service.get_by_id(id).await?;
 
@@ -83,10 +87,10 @@ async fn get_by_id(
 
 #[put("/<id>", data = "<user>")]
 async fn update_by_id(
+    _admin: Admin,
     user_service: Box<dyn UserService>,
     id: i32,
     user: Json<UpdateUser>,
-    _admin: Admin,
 ) -> Result<User, UserError> {
     let user: UpdateUser = user.0;
 
@@ -97,9 +101,9 @@ async fn update_by_id(
 
 #[delete("/<id>")]
 async fn delete_by_id(
+    _admin: Admin,
     user_service: Box<dyn UserService>,
     id: i32,
-    _admin: Admin,
 ) -> Result<(), UserError> {
     user_service.delete_by_id(id).await?;
 

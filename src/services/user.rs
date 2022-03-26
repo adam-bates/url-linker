@@ -11,7 +11,7 @@ use super::{
 pub trait UserService: Send + Sync {
     async fn create(&self, user: CreateUserRequest) -> Result<User, UserError>;
 
-    async fn get_all(&self) -> Result<Vec<User>, UserError>;
+    async fn get_all(&self, client_id: Option<String>) -> Result<Vec<User>, UserError>;
 
     async fn verify_and_get(
         &self,
@@ -149,18 +149,32 @@ impl UserService for DbUserService {
         });
     }
 
-    async fn get_all(&self) -> Result<Vec<User>, UserError> {
+    async fn get_all(&self, client_id: Option<String>) -> Result<Vec<User>, UserError> {
         return self
             .db
             .run(move |connection| {
                 let mut users = vec![];
 
-                for row in connection
-                    .query(
-                        "SELECT id, client_id, client_secret, is_admin FROM users ORDER BY id ASC;",
-                        &[],
-                    )
-                    .unwrap()
+                let rows = match client_id {
+                    Some(client_id) => {
+                        let client_id = client_id.to_ascii_lowercase();
+
+                        connection
+                            .query(
+                                "SELECT id, client_id, client_secret, is_admin FROM users WHERE client_id LIKE $1 ORDER BY id ASC;",
+                                &[&client_id],
+                            )
+                            .unwrap()
+                    }
+                    None => connection
+                        .query(
+                            "SELECT id, client_id, client_secret, is_admin FROM users ORDER BY id ASC;",
+                            &[],
+                        )
+                        .unwrap()
+                };
+
+                for row in rows
                 {
                     let id: i32 = row.get("id");
 
