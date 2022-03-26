@@ -40,6 +40,7 @@ impl<'r> FromRequest<'r> for Box<dyn UserService> {
 fn build_argon2_config_ref() -> Argon2ConfigRef {
     return Argon2ConfigRef::new(Argon2Config {
         secret: HASHER_SECRET.as_bytes(),
+        variant: argon2::Variant::Argon2id,
         ..Argon2Config::default()
     });
 }
