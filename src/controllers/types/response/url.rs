@@ -3,6 +3,7 @@ use rocket::serde::Serialize;
 use crate::services::types::url::Url as ServiceUrl;
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Url {
     pub key: String,
     pub url: String,
@@ -10,6 +11,7 @@ pub struct Url {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Urls {
     pub values: Vec<Url>,
 }

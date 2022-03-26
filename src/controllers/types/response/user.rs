@@ -3,6 +3,7 @@ use rocket::serde::Serialize;
 use crate::services::types::user::User as ServiceUser;
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: i32,
     pub client_id: String,
@@ -10,6 +11,7 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Users {
     pub values: Vec<User>,
 }

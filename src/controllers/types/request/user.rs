@@ -3,6 +3,7 @@ use rocket::serde::{json::Json, Deserialize};
 use crate::services::types::user::{CreateUserRequest, UpdateUserRequest};
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateUser {
     pub client_id: String,
     pub client_secret: String,
@@ -26,6 +27,7 @@ impl Into<CreateUserRequest> for CreateUser {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateUser {
     pub client_id: Option<String>,
     pub client_secret: Option<String>,
@@ -49,8 +51,9 @@ impl Into<UpdateUserRequest> for UpdateUser {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateUserClientSecret {
-    pub client_secret: String,
+    pub client_secret: Option<String>,
 }
 
 impl From<Json<UpdateUserClientSecret>> for UpdateUserClientSecret {

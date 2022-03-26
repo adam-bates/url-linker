@@ -12,7 +12,7 @@ use super::super::types::{
 
 pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
     return rocket.mount(
-        "/api/urls",
+        "/api/v1/urls",
         routes![create, get_all, get_by_key, update_by_key, delete_by_key],
     );
 }
