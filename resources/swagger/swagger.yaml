@@ -55,8 +55,7 @@ paths:
         "200":
           description: operation successful
           schema:
-            values:
-              $ref: "#/definitions/Url"
+            $ref: "#/definitions/Urls"
       security:
         - client_id: []
           client_secret: []
@@ -191,6 +190,10 @@ definitions:
       userId:
         type: integer
         format: int32
+  Urls:
+    type: array
+    items:
+      $ref: "#/definitions/Url"
   User:
     type: object
     properties:
