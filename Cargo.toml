@@ -1,12 +1,12 @@
 [package]
 name = "url-linker"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 license = "MIT"
 description = "Dynamically link URLs with custom names for shortening or improved readability."
 readme = "README.md"
 repository = "https://github.com/adam-bates/url-linker"
-authors = ["Adam Bates <adam@adambates.ca"]
+authors = ["Adam Bates <adam@adambates.ca>"]
 
 [dependencies]
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
