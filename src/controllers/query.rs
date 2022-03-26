@@ -14,7 +14,7 @@ async fn index() -> Redirect {
     return Redirect::to(uri!("/api/v1/swagger"));
 }
 
-#[get("/<key..>", rank = 2)]
+#[get("/<key..>", rank = 11)]
 async fn query(url_service: Box<dyn UrlService>, key: PathBuf) -> Result<Redirect, UrlError> {
     let key = key.display().to_string();
 
