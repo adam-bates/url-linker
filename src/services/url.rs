@@ -12,7 +12,9 @@ pub trait UrlService: Send + Sync {
 
     async fn get_all(&self) -> Result<Vec<Url>, UrlError>;
 
-    async fn get_all_by_user(&self, user: User) -> Result<Vec<Url>, UrlError>;
+    async fn get_all_for_user(&self, user: User) -> Result<Vec<Url>, UrlError>;
+
+    async fn get_all_by_user_id(&self, user_id: i32) -> Result<Vec<Url>, UrlError>;
 
     async fn get_by_key(&self, key: String) -> Result<Url, UrlError>;
 
@@ -177,7 +179,11 @@ impl UrlService for DbUrlService {
             .await;
     }
 
-    async fn get_all_by_user(&self, user: User) -> Result<Vec<Url>, UrlError> {
+    async fn get_all_for_user(&self, user: User) -> Result<Vec<Url>, UrlError> {
+        return self.get_all_by_user_id(user.id).await;
+    }
+
+    async fn get_all_by_user_id(&self, user_id: i32) -> Result<Vec<Url>, UrlError> {
         return self
             .db
             .run(move |connection| {
@@ -186,7 +192,7 @@ impl UrlService for DbUrlService {
                 for row in connection
                     .query(
                         "SELECT key, url, user_id FROM key_urls WHERE user_id = $1 ORDER BY key ASC;",
-                        &[&user.id],
+                        &[&user_id],
                     )
                     .unwrap()
                 {
