@@ -38,7 +38,7 @@ async fn create(
     return Ok(Url::from(url));
 }
 
-#[get("/?include_all")]
+#[get("/?include_all", rank = 1)]
 async fn get_all_for_admin(
     _admin: Admin,
     url_service: Box<dyn UrlService>,
@@ -68,7 +68,7 @@ async fn get_all_by_user_id(
     });
 }
 
-#[get("/<key..>")]
+#[get("/<key..>", rank = 3)]
 async fn get_by_key(
     user: User,
     url_service: Box<dyn UrlService>,
