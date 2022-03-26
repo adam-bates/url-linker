@@ -191,9 +191,12 @@ definitions:
         type: integer
         format: int32
   Urls:
-    type: array
-    items:
-      $ref: "#/definitions/Url"
+    type: object
+    properties:
+      values:
+        type: array
+        items:
+          $ref: "#/definitions/Url"
   User:
     type: object
     properties:
