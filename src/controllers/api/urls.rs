@@ -39,9 +39,12 @@ async fn create(
     return Ok(Url::from(url));
 }
 
-#[get("/")]
-async fn get_all(user: User, url_service: Box<dyn UrlService>) -> Result<Urls, UrlError> {
-    let urls = url_service.get_all_for_user(user).await?;
+#[get("/?include_all", rank = 1)]
+async fn get_all_for_admin(
+    _admin: Admin,
+    url_service: Box<dyn UrlService>,
+) -> Result<Urls, UrlError> {
+    let urls = url_service.get_all().await?;
 
     return Ok(Urls {
         values: urls.into_iter().map(|url| Url::from(url)).collect(),
@@ -61,12 +64,9 @@ async fn get_all_by_user_id(
     });
 }
 
-#[get("/?include_all", rank = 3)]
-async fn get_all_for_admin(
-    _admin: Admin,
-    url_service: Box<dyn UrlService>,
-) -> Result<Urls, UrlError> {
-    let urls = url_service.get_all().await?;
+#[get("/", rank = 3)]
+async fn get_all(user: User, url_service: Box<dyn UrlService>) -> Result<Urls, UrlError> {
+    let urls = url_service.get_all_for_user(user).await?;
 
     return Ok(Urls {
         values: urls.into_iter().map(|url| Url::from(url)).collect(),
