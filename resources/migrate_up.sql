@@ -2,13 +2,12 @@ CREATE TABLE IF NOT EXISTS users (
     id serial UNIQUE PRIMARY KEY NOT NULL,
     client_id VARCHAR(256) UNIQUE NOT NULL,
     client_secret VARCHAR(1024) NOT NULL,
-    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS key_urls (
     key VARCHAR(128) UNIQUE PRIMARY KEY NOT NULL,
     url TEXT NOT NULL,
     user_id INT NOT NULL,
-    FOREIGN KEY (user_id)
-      REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
