@@ -37,6 +37,7 @@ paths:
                 type: string
       responses:
         "200":
+          description: operation successful
           schema:
             $ref: "#/definitions/Url"
       security:
@@ -52,6 +53,7 @@ paths:
       parameters: []
       responses:
         "200":
+          description: operation successful
           schema:
             values:
               $ref: "#/definitions/Url"
@@ -74,6 +76,7 @@ paths:
           type: string
       responses:
         "200":
+          description: operation successful
           schema:
             $ref: "#/definitions/Url"
       security:
@@ -104,6 +107,7 @@ paths:
                 type: string
       responses:
         "200":
+          description: operation successful
           schema:
             $ref: "#/definitions/Url"
       security:
@@ -122,7 +126,8 @@ paths:
           required: true
           type: string
       responses:
-        "204": {}
+        "204":
+          description: operation successful
       security:
         - client_id: []
           client_secret: []
@@ -136,6 +141,7 @@ paths:
         - application/json
       responses:
         "200":
+          description: operation successful
           schema:
             $ref: "#/definitions/User"
       security:
@@ -159,6 +165,7 @@ paths:
                 type: string
       responses:
         "200":
+          description: operation successful
           schema:
             $ref: "#/definitions/User"
       security:
