@@ -23,6 +23,15 @@ pub enum UserError {
     Unknown,
 }
 
+impl UserError {
+    fn bad_request<'r, 'o>(self, request: &'r Request<'_>) -> Result<'o> {
+        return Responder::respond_to(Json(self), request).map(|mut res| {
+            res.set_status(Status::BadRequest);
+            return res;
+        });
+    }
+}
+
 impl<'r, 'o: 'r> Responder<'r, 'o> for UserError {
     fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         return match self {
@@ -30,7 +39,7 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for UserError {
             | Self::ClientIdTooShort { .. }
             | Self::ClientIdTooLong { .. }
             | Self::ClientSecretTooShort { .. }
-            | Self::ClientSecretTooLong { .. } => Responder::respond_to(Json(self), request),
+            | Self::ClientSecretTooLong { .. } => self.bad_request(request),
 
             Self::Invalid => Err(Status::Unauthorized),
 

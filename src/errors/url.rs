@@ -19,6 +19,15 @@ pub enum UrlError {
     UnexpectedUrlParseError,
 }
 
+impl UrlError {
+    fn bad_request<'r, 'o>(self, request: &'r Request<'_>) -> Result<'o> {
+        return Responder::respond_to(Json(self), request).map(|mut res| {
+            res.set_status(Status::BadRequest);
+            return res;
+        });
+    }
+}
+
 impl<'r, 'o: 'r> Responder<'r, 'o> for UrlError {
     fn respond_to(self, request: &'r Request<'_>) -> Result<'o> {
         return match self {
@@ -26,7 +35,7 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for UrlError {
             | Self::KeyTooShort { .. }
             | Self::KeyTooLong { .. }
             | Self::UrlParseError(_)
-            | Self::UrlInvalid => Responder::respond_to(Json(self), request),
+            | Self::UrlInvalid => self.bad_request(request),
             Self::NotFound => Err(Status::NotFound),
             _ => Err(Status::InternalServerError),
         };
