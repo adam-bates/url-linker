@@ -12,7 +12,7 @@ pub fn mount(rocket: Rocket<Build>) -> Rocket<Build> {
 
 #[get("/")]
 async fn index() -> Redirect {
-    return Redirect::to(uri!("/api/v1/swagger"));
+    return Redirect::to(uri!("/client"));
 }
 
 #[get("/<key..>", rank = 11)]
