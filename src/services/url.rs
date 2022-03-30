@@ -56,6 +56,12 @@ fn validate_key(key: &str) -> Result<(), UrlError> {
         });
     }
 
+    if key.starts_with("client/") {
+        return Err(UrlError::KeyReserved {
+            prefix: String::from("/client"),
+        });
+    }
+
     let length = key.len();
 
     if length < MIN {
