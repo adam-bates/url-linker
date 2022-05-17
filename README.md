@@ -1,4 +1,4 @@
-Hi bashbunni viewers. Sorry for the shitty project :) Wrote it in a week. You guys don't have credentials to use the api, but swagger docs are here: https://g3t.ca/api/v1/swagger
+Hi bashbunni viewers. Sorry for the shitty project :) Wrote it in a week. You guys don't have credentials to use it, but swagger docs are here: https://g3t.ca/api/v1/swagger
 
 # URL Linker
 
